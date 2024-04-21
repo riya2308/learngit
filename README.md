@@ -1,1 +1,5 @@
-        when(templateEngine.process(eq(templateLocation), any())).thenReturn("processed content");
+String templatePath = "src\\\\test\\\\resources\\\\testFiles\\\\TestEmailTemplate.html";
+    Mockito.when(templateEngine.process(
+        Mockito.eq(templatePath), 
+        Mockito.any())
+    ).thenReturn("processed content");
