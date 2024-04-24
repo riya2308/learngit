@@ -1,37 +1,47 @@
-// src/app/app.component.ts
-import { Component, ViewChild, OnInit } from '@angular/core';
-import { IgxDockManagerComponent, IDockManagerLayout } from 'igniteui-angular';
+<igx-dock-manager #dockManager>
+  <igx-pane [contentId]="'content1'" [header]="'Content 1'">
+    <!-- Your content for pane 1 -->
+  </igx-pane>
+  <igx-pane [contentId]="'content2'" [header]="'Content 2'" [isPinned]="true">
+    <!-- Your content for pane 2 -->
+  </igx-pane>
+</igx-dock-manager>
+
+
+import { Component, ViewChild } from '@angular/core';
+import { IgxDockManagerComponent, IgxDockManagerPaneType, IgxSplitPaneOrientation } from '@infragistics/igniteui-dockmanager';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
-  @ViewChild('dockManager', { static: true })
-  public dockManager: IgxDockManagerComponent;
+export class AppComponent {
+  @ViewChild('dockManager', { static: true }) public dockManager: IgxDockManagerComponent;
 
-  public layout: IDockManagerLayout = {
-    rootPane: {
-      type: 'splitPane',
-      orientation: 'horizontal',
-      panes: [
-        {
-          type: 'dockPanel',
-          allowedDock: 'left',
-          isPinned: false,
-          size: 200,
-          contentId: 'sideContent'
-        },
-        {
-          type: 'contentPane',
-          contentId: 'mainContent'
-        }
-      ]
-    }
-  };
-
-  ngOnInit() {
-    this.dockManager.layout = this.layout;
+  ngAfterViewInit() {
+    this.dockManager.layout = {
+      rootPane: {
+        type: IgxDockManagerPaneType.splitPane,
+        orientation: IgxSplitPaneOrientation.horizontal,
+        panes: [
+          {
+            type: IgxDockManagerPaneType.splitPane,
+            orientation: IgxSplitPaneOrientation.vertical,
+            panes: [
+              {
+                type: IgxDockManagerPaneType.contentPane,
+                contentId: 'content1'
+              },
+              {
+                type: IgxDockManagerPaneType.contentPane,
+                contentId: 'content2',
+                isPinned: true
+              }
+            ]
+          }
+        ]
+      }
+    };
   }
 }
