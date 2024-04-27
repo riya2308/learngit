@@ -1,36 +1,50 @@
+<div class="sidebar-container d-flex">
+  <div class="sidebar bg-light" [ngClass]="{'sidebar-open': isOpen}">
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="#">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Services</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Contact</a>
+      </li>
+    </ul>
+  </div>
+  <div class="content p-4" (mouseenter)="isOpen = true" (mouseleave)="isOpen = false">
+    <h1>Content Area</h1>
+    <p>This is the main content area.</p>
+
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-sidebar',
+  templateUrl: './sidebar.component.html',
+  styleUrls: ['./sidebar.component.css']
+})
+export class SidebarComponent {
+  isOpen = false;
+}
+
+
+.sidebar-container {
+  height: 100vh;
+}
+
 .sidebar {
-    width: 0;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #333;
-    overflow-x: hidden;
-    transition: width 0.5s;
-    z-index: 1000;
+  width: 200px;
+  transition: width 0.3s ease-in-out;
 }
 
-.sidebar a {
-    padding: 10px 15px;
-    text-decoration: none;
-    font-size: 25px;
-    color: white;
-    display: block;
-    transition: 0.3s;
+.sidebar-open {
+  width: 250px;
 }
 
-.sidebar a:hover {
-    color: #f1f1f1;
+.content {
+  flex-grow: 1;
 }
-
-.sidebar:hover {
-    width: 250px;
-}
-
-
-<div class="sidebar">
-    <a href="#">Home</a>
-    <a href="#">About</a>
-    <a href="#">Services</a>
-    <a href="#">Contact</a>
-</div>
