@@ -1,47 +1,36 @@
-<igx-dock-manager #dockManager>
-  <igx-pane [contentId]="'content1'" [header]="'Content 1'">
-    <!-- Your content for pane 1 -->
-  </igx-pane>
-  <igx-pane [contentId]="'content2'" [header]="'Content 2'" [isPinned]="true">
-    <!-- Your content for pane 2 -->
-  </igx-pane>
-</igx-dock-manager>
-
-
-import { Component, ViewChild } from '@angular/core';
-import { IgxDockManagerComponent, IgxDockManagerPaneType, IgxSplitPaneOrientation } from '@infragistics/igniteui-dockmanager';
-
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
-})
-export class AppComponent {
-  @ViewChild('dockManager', { static: true }) public dockManager: IgxDockManagerComponent;
-
-  ngAfterViewInit() {
-    this.dockManager.layout = {
-      rootPane: {
-        type: IgxDockManagerPaneType.splitPane,
-        orientation: IgxSplitPaneOrientation.horizontal,
-        panes: [
-          {
-            type: IgxDockManagerPaneType.splitPane,
-            orientation: IgxSplitPaneOrientation.vertical,
-            panes: [
-              {
-                type: IgxDockManagerPaneType.contentPane,
-                contentId: 'content1'
-              },
-              {
-                type: IgxDockManagerPaneType.contentPane,
-                contentId: 'content2',
-                isPinned: true
-              }
-            ]
-          }
-        ]
-      }
-    };
-  }
+.sidebar {
+    width: 0;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #333;
+    overflow-x: hidden;
+    transition: width 0.5s;
+    z-index: 1000;
 }
+
+.sidebar a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 25px;
+    color: white;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    color: #f1f1f1;
+}
+
+.sidebar:hover {
+    width: 250px;
+}
+
+
+<div class="sidebar">
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Services</a>
+    <a href="#">Contact</a>
+</div>
