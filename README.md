@@ -1,33 +1,18 @@
-import { Component } from '@angular/core';
+<!-- app.component.html -->
 
-@Component({
-  selector: 'app-data-grid',
-  templateUrl: './data-grid.component.html',
-  styleUrls: ['./data-grid.component.css'],
-  imports: [
-    // ... other modules here
-    AgGridModule.withComponents([]),
-  ]
-})
-export class DataGridComponent {
-  columnDefs = [
-    { headerName: 'Make', field: 'make' },
-    { headerName: 'Model', field: 'model' },
-    { headerName: 'Price', field: 'price' }
-  ];
+<div class="container-fluid">
+  <div class="row min-vh-100 flex-column flex-md-row">
+    
+    <!-- Sidebar Component -->
+    <app-sidebar class="col-12 col-md-3 col-xl-2 p-0 bg-dark"></app-sidebar>
 
-  rowData = [
-    { make: 'Toyota', model: 'Celica', price: 35000 },
-    { make: 'Ford', model: 'Mondeo', price: 32000 },
-    { make: 'Porsche', model: 'Boxter', price: 72000 }
-  ];
-}
-
-
-<!-- data-grid.component.html -->
-<ag-grid-angular
-  style="width: 100%; height: 500px;"
-  class="ag-theme-alpine"
-  [rowData]="rowData"
-  [columnDefs]="columnDefs">
-</ag-grid-angular>
+    <div class="col p-0 flex-grow-1">
+      <!-- Header Component -->
+      <app-header class="col-12 p-0"></app-header>
+      
+      <!-- Grid Component (Main Content) -->
+      <app-data-grid class="col p-3"></app-data-grid>
+    </div>
+    
+  </div>
+</div>
