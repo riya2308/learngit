@@ -1,50 +1,21 @@
-<header class="navbar navbar-default">
-  <div class="container">
-    <div class="pageTitle">
-      WS Software Distribution and End User Communication
-    </div>
-    <div class="user-info">
-      <img *ngIf="photoUrl" src="{{photoUrl}}" style="">
-      <img *ngIf="!photoUrl" src="http://fwdirectory.ms.com/itsmg/slash/webapp/images/IconNoPhotoAvailable_Large.png">
-      <span class="user-name">{{userName}}</span>
-    </div>
+<div class="row">
+  <div class="col-md-11 text-right">
+    <button type="button" class="btn btn-primary mt-2 mb-3">Approve</button>
   </div>
-</header>
 
-.container {
-  width: 100%!important;
-  padding: 0;
-  max-width: 100%!important;
-}
+</div>
 
-.container .pageTitle {
-  padding: 14px 20px;
-  display: inline-block;
-  font-family: Karla-Bold;
-  font-size: 20px;
-  color: #fff;
-  letter-spacing: .25px;
-  cursor: pointer;
-}
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" id="selectAllCheckbox" (change)="selectAll($event)">
+  <label class="form-check-label" for="selectAllCheckbox">
+    Select All
+  </label>
+</div>
 
-.container .user-info {
-  float: right;
-  padding: 7px 20px 0;
-  display: inline-block;
-}
-
-.container .user-info img {
-  width: 20px;
-  height: 20px;
-  border-radius: 100%;
-  margin-right: 8px;
-  position: relative;
-  top: 6px;
-}
-
-.container .user-info .user-name {
-  font-family: Karla-Bold;
-  color: #fff;
-  letter-spacing: .25px;
-  font-size: 15px;
+selectAll(event) {
+  const isChecked = event.target.checked;
+  // Assuming `rows` is the variable that contains the grid data
+  this.rows.forEach(row => {
+    row.selected = isChecked;
+  });
 }
