@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.Map;
+            int newCount = (int) rows.stream().filter(gsData -> gsData.getUpdatedDate() == null).count();
 
 public void updateMailStatus(Map<Integer, List<GsData>> mailGroupDataHashMap) {
     for (Map.Entry<Integer, List<GsData>> entry : mailGroupDataHashMap.entrySet()) {
