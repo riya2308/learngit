@@ -1,42 +1,54 @@
-import java.util.List;
-import java.util.Map;
-            int newCount = (int) rows.stream().filter(gsData -> gsData.getUpdatedDate() == null).count();
+Start the Chrome WebDriver:
+Ensure you have already set up the Chrome WebDriver correctly. This is usually done with lines like:
 
-public void updateMailStatus(Map<Integer, List<GsData>> mailGroupDataHashMap) {
-    for (Map.Entry<Integer, List<GsData>> entry : mailGroupDataHashMap.entrySet()) {
-        Integer key = entry.getKey();
-        List<GsData> dataList = entry.getValue();
+java
+Copy code
+System.setProperty("webdriver.chrome.driver", "path_to_chromedriver");
+WebDriver driver = new ChromeDriver();
+Navigate to the Voltaire webpage:
+You mentioned that you've configured the Chrome driver to open the Voltaire webpage. You can navigate to a URL with:
 
-        // Update logic based on your requirement
-        boolean mailSent = determineIfMailSent(dataList); // Implement this method based on your logic
-        int newCount = countNewRecords(dataList); // Implement this method to count new records
-        int totalCount = dataList.size();
+java
+Copy code
+driver.get("http://voltaire.webfarm.ms.com/requestor/create");
+Wait for Elements to Load:
+You can use WebDriverWait to ensure that the page elements are fully loaded before you try to interact with them.
 
-        // Log the update for debugging
-        System.out.println("Updating mail group " + key + ": Mail Sent = " + mailSent + ", New Count = " + newCount + ", Total Count = " + totalCount);
+java
+Copy code
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("someElementId")));
+Interact with the Form:
+Replace the PowerShell commands that send keystrokes with Selenium commands that directly manipulate form elements. For example:
 
-        // Update the status in your database or another structure here
-        updateDatabaseOrStructure(key, mailSent, newCount, totalCount);  // Define this method as per your requirement
-    }
-}
+Select Region and Share Information:
+If the form fields are dropdowns or input fields, you can use Select for dropdowns and send keys to inputs.
 
-private boolean determineIfMailSent(List<GsData> dataList) {
-    // Define logic to determine if mail was sent
-    return true; // Placeholder
-}
+java
+Copy code
+Select regionDropdown = new Select(driver.findElement(By.id("regionDropdownId")));
+regionDropdown.selectByVisibleText("Asia Pacific");
 
-private int countNewRecords(List<GsData> dataList) {
-    // Define logic to count new records
-    int count = 0;
-    for (GsData data : dataList) {
-        if (data.isNewRecord()) {  // Assuming GsData has an isNewRecord() method to check if the record is new
-            count++;
-        }
-    }
-    return count;
-}
+WebElement shareInput = driver.findElement(By.id("shareInputId"));
+shareInput.sendKeys("1000");  // Example: sending '1000' to share input
+Navigate through Form:
+Use WebElement to find buttons and then .click() to interact with them.
 
-private void updateDatabaseOrStructure(Integer key, boolean mailSent, int newCount, int totalCount) {
-    // Update the database or any other structure you are using to track these statuses
-    System.out.println("Database updated for key: " + key);  // Placeholder
-}
+java
+Copy code
+WebElement nextButton = driver.findElement(By.id("nextButtonId"));
+nextButton.click();
+Submit the Form:
+After filling out all necessary fields, find the submit button and click it.
+
+java
+Copy code
+WebElement submitButton = driver.findElement(By.id("submitButtonId"));
+submitButton.click();
+Error Handling and Cleanup:
+Make sure to include error handling (try-catch blocks) to handle potential exceptions. Also, ensure you close the browser after the script completes:
+
+java
+Copy code
+driver.quit();
+This is a basic structure to help you automate your web interactions using Selenium and Java, matching the steps you previously used with PowerShell. Adjust the element selectors (By.id, By.xpath, etc.) to match the actual elements in the Voltaire form you are working with.
