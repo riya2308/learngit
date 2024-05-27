@@ -53,3 +53,12 @@ public class FormAutomation {
         }
     }
 }
+
+
+
+
+
+//by id
+WebElement asiaRadioButton = driver.findElement(By.id("asia"));
+            asiaRadioButton.click();
+            Thread.sleep(500); 
