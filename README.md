@@ -1,54 +1,55 @@
-Start the Chrome WebDriver:
-Ensure you have already set up the Chrome WebDriver correctly. This is usually done with lines like:
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.Select;
 
-java
-Copy code
-System.setProperty("webdriver.chrome.driver", "path_to_chromedriver");
-WebDriver driver = new ChromeDriver();
-Navigate to the Voltaire webpage:
-You mentioned that you've configured the Chrome driver to open the Voltaire webpage. You can navigate to a URL with:
+public class FormAutomation {
+    public static void main(String[] args) {
+        System.setProperty("webdriver.chrome.driver", "path_to_chromedriver");
 
-java
-Copy code
-driver.get("http://voltaire.webfarm.ms.com/requestor/create");
-Wait for Elements to Load:
-You can use WebDriverWait to ensure that the page elements are fully loaded before you try to interact with them.
+        WebDriver driver = new ChromeDriver();
+        driver.get("http://voltaire.webfarm.ms.com/requestor/create");  // Replace with your actual URL
 
-java
-Copy code
-WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("someElementId")));
-Interact with the Form:
-Replace the PowerShell commands that send keystrokes with Selenium commands that directly manipulate form elements. For example:
+        try {
+            // Ensure the page is fully loaded
+            Thread.sleep(10000);  // Wait for 10 seconds
 
-Select Region and Share Information:
-If the form fields are dropdowns or input fields, you can use Select for dropdowns and send keys to inputs.
+            // Send 12 TAB keys to navigate through the form
+            WebElement body = driver.findElement(By.tagName("body"));
+            for (int i = 0; i < 12; i++) {
+                body.sendKeys(Keys.TAB);
+                Thread.sleep(300);  // Wait for 300 milliseconds after each TAB
+            }
 
-java
-Copy code
-Select regionDropdown = new Select(driver.findElement(By.id("regionDropdownId")));
-regionDropdown.selectByVisibleText("Asia Pacific");
+            // Select a region from a dropdown
+            Select regionDropdown = new Select(driver.findElement(By.id("regionDropdownId")));  // Replace 'regionDropdownId' with actual ID
+            regionDropdown.selectByVisibleText("Asia Pacific");  // Replace 'Asia Pacific' with the actual option you need
 
-WebElement shareInput = driver.findElement(By.id("shareInputId"));
-shareInput.sendKeys("1000");  // Example: sending '1000' to share input
-Navigate through Form:
-Use WebElement to find buttons and then .click() to interact with them.
+            // Send additional TAB keystroke(s) to move to the next field
+            body.sendKeys(Keys.TAB);
+            Thread.sleep(300);  // Adjust based on how form reacts, may need more TABs
 
-java
-Copy code
-WebElement nextButton = driver.findElement(By.id("nextButtonId"));
-nextButton.click();
-Submit the Form:
-After filling out all necessary fields, find the submit button and click it.
+            // Select a type from another dropdown
+            Select typeDropdown = new Select(driver.findElement(By.id("typeDropdownId")));  // Replace 'typeDropdownId' with actual ID
+            typeDropdown.selectByVisibleText("Type1");  // Replace 'Type1' with the actual option you need
 
-java
-Copy code
-WebElement submitButton = driver.findElement(By.id("submitButtonId"));
-submitButton.click();
-Error Handling and Cleanup:
-Make sure to include error handling (try-catch blocks) to handle potential exceptions. Also, ensure you close the browser after the script completes:
+            // Send additional TAB keystroke to move to the next field
+            body.sendKeys(Keys.TAB);
+            Thread.sleep(300);  // Wait for 300 milliseconds
 
-java
-Copy code
-driver.quit();
-This is a basic structure to help you automate your web interactions using Selenium and Java, matching the steps you previously used with PowerShell. Adjust the element selectors (By.id, By.xpath, etc.) to match the actual elements in the Voltaire form you are working with.
+            // Select a form from another dropdown
+            Select formDropdown = new Select(driver.findElement(By.id("formDropdownId")));  // Replace 'formDropdownId' with actual ID
+            formDropdown.selectByVisibleText("Form1");  // Replace 'Form1' with the actual option you need
+
+            // Optionally, submit the form if needed
+            // driver.findElement(By.id("submitBtnId")).click();  // Replace 'submitBtnId' with actual ID
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            driver.quit();  // Close the browser
+        }
+    }
+}
