@@ -1,57 +1,60 @@
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+import org.apache.poi.xssf.usermodel.*;
+import org.junit.*;
+import java.util.*;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.HashSet;
-import java.util.Set;
+public class WriteForKeyTest {
+    private static final String SHEET_NAME = "TestSheet";
 
-public class UniqueRecords {
-    public static void main(String[] args) {
-        String inputFile = "path_to_input_file.xlsx";
-        String outputFile = "path_to_output_file.xlsx";
+    @Test
+    public void testSuccessfulExecution() {
+        // Prepare data
+        Integer keyValue = 10;
+        List<GsData> rows = Arrays.asList(new GsData(), new GsData()); // Assume GsData is a valid class
 
-        try (FileInputStream fileInputStream = new FileInputStream(inputFile);
-             Workbook workbook = new XSSFWorkbook(fileInputStream);
-             Workbook outputWorkbook = new XSSFWorkbook();
-             FileOutputStream fileOutputStream = new FileOutputStream(outputFile)) {
+        // Mocking Excel components
+        XSSFWorkbook mockedWorkbook = mock(XSSFWorkbook.class);
+        XSSFSheet mockedSheet = mock(XSSFSheet.class);
+        XSSFRow mockedRow = mock(XSSFRow.class);
+        XSSFCellStyle mockedCellStyle = mock(XSSFCellStyle.class);
 
-            Sheet inputSheet = workbook.getSheetAt(0);
-            Sheet outputSheet = outputWorkbook.createSheet("UniqueRecords");
+        when(mockedWorkbook.createSheet(SHEET_NAME)).thenReturn(mockedSheet);
+        when(mockedSheet.createRow(anyInt())).thenReturn(mockedRow);
+        when(mockedWorkbook.createCellStyle()).thenReturn(mockedCellStyle);
 
-            Set<String> uniqueCombinations = new HashSet<>();
-            int outputRowNum = 0;
+        // Call the method under test
+        YourClass instance = new YourClass(); // YourClass should be replaced with the actual class name
+        instance.writeForKey(keyValue, rows);
 
-            for (Row row : inputSheet) {
-                Cell groupCell = row.getCell(0); // Assuming 'group' is in the first column
-                Cell nameCell = row.getCell(1); // Assuming 'name' is in the second column
+        // Verify the interactions
+        verify(mockedSheet, times(rows.size() + 1)).createRow(anyInt()); // +1 for the header row
+        verify(mockedCellStyle, times(1)).setBorderTop(BorderStyle.THIN);
+        verify(mockedCellStyle, times(1)).setBorderBottom(BorderStyle.THIN);
+        verify(mockedCellStyle, times(1)).setBorderLeft(BorderStyle.THIN);
+        verify(mockedCellStyle, times(1)).setBorderRight(BorderStyle.THIN);
+        verify(mockedSheet, times(1)).setDefaultColumnStyle(anyInt(), eq(mockedCellStyle));
+    }
 
-                if (groupCell != null && nameCell != null && 
-                    groupCell.getCellType() == CellType.STRING && 
-                    nameCell.getCellType() == CellType.STRING) {
+    @Test
+    public void testExceptionHandling() {
+        Integer keyValue = 10;
+        List<GsData> rows = Arrays.asList(new GsData());
 
-                    String group = groupCell.getStringCellValue();
-                    String name = nameCell.getStringCellValue();
+        // Mocking to throw an exception
+        XSSFWorkbook mockedWorkbook = mock(XSSFWorkbook.class);
+        when(mockedWorkbook.createSheet(SHEET_NAME)).thenThrow(new RuntimeException("Test exception"));
 
-                    if (!group.isEmpty() && !name.isEmpty()) {
-                        String combination = group + "+" + name;
-
-                        if (!uniqueCombinations.contains(combination)) {
-                            uniqueCombinations.add(combination);
-
-                            // Create a new row in the output sheet and copy values
-                            Row outputRow = outputSheet.createRow(outputRowNum++);
-                            outputRow.createCell(0).setCellValue(group);
-                            outputRow.createCell(1).setCellValue(name);
-                        }
-                    }
-                }
-            }
-
-            outputWorkbook.write(fileOutputStream);
-            System.out.println("Unique combinations have been written to the output file.");
-        } catch (Exception e) {
-            e.printStackTrace();
+        // Setup the class under test
+        YourClass instance = new YourClass();
+        try {
+            instance.writeForKey(keyValue, rows);
+            fail("Expected an exception to be thrown");
+        } catch (RuntimeException e) {
+            assertEquals("Test exception", e.getMessage());
         }
+
+        // Ensuring the mail method is called on failure
+        // This assumes sendMailOnFailure is accessible or observable through some means (e.g., another mock or a spy)
     }
 }
