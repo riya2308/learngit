@@ -1,60 +1,60 @@
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import org.apache.poi.xssf.usermodel.*;
-import org.junit.*;
-import java.util.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-public class WriteForKeyTest {
-    private static final String SHEET_NAME = "TestSheet";
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 
-    @Test
-    public void testSuccessfulExecution() {
-        // Prepare data
-        Integer keyValue = 10;
-        List<GsData> rows = Arrays.asList(new GsData(), new GsData()); // Assume GsData is a valid class
+public class WebInteraction {
+    public static void main(String[] args) throws InterruptedException {
+        BufferedReader br = new BufferedReader(new FileReader("path_to_your_csv_file"));
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(br);
 
-        // Mocking Excel components
-        XSSFWorkbook mockedWorkbook = mock(XSSFWorkbook.class);
-        XSSFSheet mockedSheet = mock(XSSFSheet.class);
-        XSSFRow mockedRow = mock(XSSFRow.class);
-        XSSFCellStyle mockedCellStyle = mock(XSSFCellStyle.class);
+        // Initialize the WebDriver and other setup here...
 
-        when(mockedWorkbook.createSheet(SHEET_NAME)).thenReturn(mockedSheet);
-        when(mockedSheet.createRow(anyInt())).thenReturn(mockedRow);
-        when(mockedWorkbook.createCellStyle()).thenReturn(mockedCellStyle);
+        List<CSVRecord> batch = new ArrayList<>();
+        int batchSize = 10;
+        int count = 0;
 
-        // Call the method under test
-        YourClass instance = new YourClass(); // YourClass should be replaced with the actual class name
-        instance.writeForKey(keyValue, rows);
-
-        // Verify the interactions
-        verify(mockedSheet, times(rows.size() + 1)).createRow(anyInt()); // +1 for the header row
-        verify(mockedCellStyle, times(1)).setBorderTop(BorderStyle.THIN);
-        verify(mockedCellStyle, times(1)).setBorderBottom(BorderStyle.THIN);
-        verify(mockedCellStyle, times(1)).setBorderLeft(BorderStyle.THIN);
-        verify(mockedCellStyle, times(1)).setBorderRight(BorderStyle.THIN);
-        verify(mockedSheet, times(1)).setDefaultColumnStyle(anyInt(), eq(mockedCellStyle));
-    }
-
-    @Test
-    public void testExceptionHandling() {
-        Integer keyValue = 10;
-        List<GsData> rows = Arrays.asList(new GsData());
-
-        // Mocking to throw an exception
-        XSSFWorkbook mockedWorkbook = mock(XSSFWorkbook.class);
-        when(mockedWorkbook.createSheet(SHEET_NAME)).thenThrow(new RuntimeException("Test exception"));
-
-        // Setup the class under test
-        YourClass instance = new YourClass();
-        try {
-            instance.writeForKey(keyValue, rows);
-            fail("Expected an exception to be thrown");
-        } catch (RuntimeException e) {
-            assertEquals("Test exception", e.getMessage());
+        for (CSVRecord record : records) {
+            batch.add(record);
+            if (batch.size() == batchSize) {
+                processBatch(batch);
+                batch.clear(); // Clear the batch after processing
+            }
         }
 
-        // Ensuring the mail method is called on failure
-        // This assumes sendMailOnFailure is accessible or observable through some means (e.g., another mock or a spy)
+        // Process the last batch if it's not empty
+        if (!batch.isEmpty()) {
+            processBatch(batch);
+        }
+
+        // WebDriver cleanup code here...
+    }
+
+    private static void processBatch(List<CSVRecord> batch) throws InterruptedException {
+        for (CSVRecord record : batch) {
+            WebElement pathInput = driver.findElement(By.xpath("//your_xpath_here"));
+            Thread.sleep(1000);
+            pathInput.sendKeys(record.get(2));  // Assuming column index 2 has the required data
+
+            WebElement requestedIncrease = driver.findElement(By.xpath("//your_xpath_here"));
+            Thread.sleep(2000);
+            requestedIncrease.sendKeys("1");
+
+            WebElement addMore = driver.findElement(By.xpath("//your_xpath_for_addMore_button"));
+            Thread.sleep(1000);
+            addMore.click();
+
+            Thread.sleep(1000);
+        }
+
+        // Perform the validation after each batch
+        WebElement validateButton = driver.findElement(By.xpath("//your_xpath_for_validate_button"));
+        validateButton.click();
+        Thread.sleep(2000);  // Adjust timing as necessary
     }
 }
