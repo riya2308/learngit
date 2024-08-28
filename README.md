@@ -1,60 +1,89 @@
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+java/
+│           └── datesandtimes/
+│               ├── DatesAndTimesTest.java
+│               └── CourseTimeChecker.java
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
 
-public class WebInteraction {
-    public static void main(String[] args) throws InterruptedException {
-        BufferedReader br = new BufferedReader(new FileReader("path_to_your_csv_file"));
-        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(br);
 
-        // Initialize the WebDriver and other setup here...
 
-        List<CSVRecord> batch = new ArrayList<>();
-        int batchSize = 10;
-        int count = 0;
+DatesAndTimesTest.java
+package datesandtimes;
 
-        for (CSVRecord record : records) {
-            batch.add(record);
-            if (batch.size() == batchSize) {
-                processBatch(batch);
-                batch.clear(); // Clear the batch after processing
-            }
-        }
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
 
-        // Process the last batch if it's not empty
-        if (!batch.isEmpty()) {
-            processBatch(batch);
-        }
+public class DatesAndTimesTest {
 
-        // WebDriver cleanup code here...
+    public static void main(String[] args) {
+        // Question 1: Get and print the current minute
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println("Current minute: " + now.getMinute());
+
+        // Question 2: Input a datetime string and print in a different format
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter date and time in YYYY-MM-DD HH:MM format: ");
+        String inputDateTime = scanner.nextLine();
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime parsedDateTime = LocalDateTime.parse(inputDateTime, inputFormatter);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
+        System.out.println("Formatted date: " + parsedDateTime.format(outputFormatter));
+
+        // Question 3: Allow user to select input and output format
+        System.out.println("Choose input format:");
+        System.out.println("1. YYYY-MM-DD HH:MM");
+        System.out.println("2. DD/MM/YYYY HH:MM");
+        System.out.println("3. MM-DD-YYYY HH:MM");
+        int inputChoice = scanner.nextInt();
+        scanner.nextLine(); // consume the newline
+        String inputPattern = inputChoice == 1 ? "yyyy-MM-dd HH:mm" : inputChoice == 2 ? "dd/MM/yyyy HH:mm" : "MM-dd-yyyy HH:mm";
+
+        System.out.print("Enter date and time in selected format: ");
+        inputDateTime = scanner.nextLine();
+        inputFormatter = DateTimeFormatter.ofPattern(inputPattern);
+        parsedDateTime = LocalDateTime.parse(inputDateTime, inputFormatter);
+
+        System.out.println("Choose output format:");
+        System.out.println("1. DD MMMM yyyy 'at' HH:mm");
+        System.out.println("2. MM/dd/yyyy HH:mm");
+        System.out.println("3. yyyy-MM-dd HH:mm");
+        int outputChoice = scanner.nextInt();
+        scanner.nextLine(); // consume the newline
+        String outputPattern = outputChoice == 1 ? "dd MMMM yyyy 'at' HH:mm" : outputChoice == 2 ? "MM/dd/yyyy HH:mm" : "yyyy-MM-dd HH:mm";
+
+        outputFormatter = DateTimeFormatter.ofPattern(outputPattern);
+        System.out.println("Formatted date: " + parsedDateTime.format(outputFormatter));
     }
+}
 
-    private static void processBatch(List<CSVRecord> batch) throws InterruptedException {
-        for (CSVRecord record : batch) {
-            WebElement pathInput = driver.findElement(By.xpath("//your_xpath_here"));
-            Thread.sleep(1000);
-            pathInput.sendKeys(record.get(2));  // Assuming column index 2 has the required data
 
-            WebElement requestedIncrease = driver.findElement(By.xpath("//your_xpath_here"));
-            Thread.sleep(2000);
-            requestedIncrease.sendKeys("1");
 
-            WebElement addMore = driver.findElement(By.xpath("//your_xpath_for_addMore_button"));
-            Thread.sleep(1000);
-            addMore.click();
+CourseTimeChecker.java
+package datesandtimes;
 
-            Thread.sleep(1000);
-        }
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Scanner;
 
-        // Perform the validation after each batch
-        WebElement validateButton = driver.findElement(By.xpath("//your_xpath_for_validate_button"));
-        validateButton.click();
-        Thread.sleep(2000);  // Adjust timing as necessary
+public class CourseTimeChecker {
+
+    public static void main(String[] args) {
+        // Define the end date of the course (adjust this to your actual course end date)
+        LocalDateTime courseEndDate = LocalDateTime.of(2024, 12, 31, 23, 59);
+
+        // Question 4: Calculate the number of seconds from now until the end of the course
+        LocalDateTime now = LocalDateTime.now();
+        long secondsUntilEnd = ChronoUnit.SECONDS.between(now, courseEndDate);
+        System.out.println("Seconds until the end of the course: " + secondsUntilEnd);
+
+        // Question 5: Take a datetime input and check if it's within the course period
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter date and time in YYYY-MM-DD HH:MM format: ");
+        String inputDateTime = scanner.nextLine();
+        LocalDateTime inputDate = LocalDateTime.parse(inputDateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+        LocalDateTime courseStartDate = LocalDateTime.of(2024, 1, 1, 0, 0); // Adjust as needed
+        boolean isWithinCoursePeriod = !inputDate.isBefore(courseStartDate) && !inputDate.isAfter(courseEndDate);
+        System.out.println("Is within course period: " + isWithinCoursePeriod);
     }
 }
