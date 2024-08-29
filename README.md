@@ -216,8 +216,11 @@ public class Runner {
 
 
 
-//exception
-
-public ProductAlreadyRegisteredException(String productId) {
-        super("Product with ID " + productId + " is already registered.");
-    }
+double totalValue = productQuantity.entrySet().stream()
+    .map(entry -> {
+        Product product = registeredProducts.get(entry.getKey());
+        PricingService pricingService = PricingServiceFactory.getInstance(product);
+        double price = pricingService.price(product);
+        return price * entry.getValue();
+    })
+    .reduce(0.0, Double::sum);
