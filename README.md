@@ -213,3 +213,11 @@ public class Runner {
         System.out.println("IBM, MS, META-2050F: " + bom.totalTradeQuantityForDay() + ", " + bom.totalValueOfDaysTradedProducts());
     }
 }
+
+
+
+//exception
+
+public ProductAlreadyRegisteredException(String productId) {
+        super("Product with ID " + productId + " is already registered.");
+    }
