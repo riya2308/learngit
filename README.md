@@ -1,89 +1,215 @@
-java/
-│           └── datesandtimes/
-│               ├── DatesAndTimesTest.java
-│               └── CourseTimeChecker.java
+package com.bankofmontreal.model;
+
+public abstract class Product {
+    private final String productId;
+
+    protected Product(String productId) {
+        this.productId = productId;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public abstract String getProductType();
+}
 
 
+package com.bankofmontreal.model;
 
+public class Stock extends Product {
+    private final String ticker;
+    private final String exchange;
 
-DatesAndTimesTest.java
-package datesandtimes;
+    public Stock(String productId, String ticker, String exchange) {
+        super(productId);
+        this.ticker = ticker;
+        this.exchange = exchange;
+    }
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Scanner;
-
-public class DatesAndTimesTest {
-
-    public static void main(String[] args) {
-        // Question 1: Get and print the current minute
-        LocalDateTime now = LocalDateTime.now();
-        System.out.println("Current minute: " + now.getMinute());
-
-        // Question 2: Input a datetime string and print in a different format
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter date and time in YYYY-MM-DD HH:MM format: ");
-        String inputDateTime = scanner.nextLine();
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime parsedDateTime = LocalDateTime.parse(inputDateTime, inputFormatter);
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
-        System.out.println("Formatted date: " + parsedDateTime.format(outputFormatter));
-
-        // Question 3: Allow user to select input and output format
-        System.out.println("Choose input format:");
-        System.out.println("1. YYYY-MM-DD HH:MM");
-        System.out.println("2. DD/MM/YYYY HH:MM");
-        System.out.println("3. MM-DD-YYYY HH:MM");
-        int inputChoice = scanner.nextInt();
-        scanner.nextLine(); // consume the newline
-        String inputPattern = inputChoice == 1 ? "yyyy-MM-dd HH:mm" : inputChoice == 2 ? "dd/MM/yyyy HH:mm" : "MM-dd-yyyy HH:mm";
-
-        System.out.print("Enter date and time in selected format: ");
-        inputDateTime = scanner.nextLine();
-        inputFormatter = DateTimeFormatter.ofPattern(inputPattern);
-        parsedDateTime = LocalDateTime.parse(inputDateTime, inputFormatter);
-
-        System.out.println("Choose output format:");
-        System.out.println("1. DD MMMM yyyy 'at' HH:mm");
-        System.out.println("2. MM/dd/yyyy HH:mm");
-        System.out.println("3. yyyy-MM-dd HH:mm");
-        int outputChoice = scanner.nextInt();
-        scanner.nextLine(); // consume the newline
-        String outputPattern = outputChoice == 1 ? "dd MMMM yyyy 'at' HH:mm" : outputChoice == 2 ? "MM/dd/yyyy HH:mm" : "yyyy-MM-dd HH:mm";
-
-        outputFormatter = DateTimeFormatter.ofPattern(outputPattern);
-        System.out.println("Formatted date: " + parsedDateTime.format(outputFormatter));
+    @Override
+    public String getProductType() {
+        return "Stock";
     }
 }
 
 
+package com.bankofmontreal.model;
 
-CourseTimeChecker.java
-package datesandtimes;
+public class Future extends Product {
+    private final String exchange;
+    private final String contractCode;
+    private final int month;
+    private final int year;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Scanner;
+    public Future(String productId, String exchange, String contractCode, int month, int year) {
+        super(productId);
+        this.exchange = exchange;
+        this.contractCode = contractCode;
+        this.month = month;
+        this.year = year;
+    }
 
-public class CourseTimeChecker {
+    @Override
+    public String getProductType() {
+        return "Future";
+    }
+}
 
-    public static void main(String[] args) {
-        // Define the end date of the course (adjust this to your actual course end date)
-        LocalDateTime courseEndDate = LocalDateTime.of(2024, 12, 31, 23, 59);
 
-        // Question 4: Calculate the number of seconds from now until the end of the course
-        LocalDateTime now = LocalDateTime.now();
-        long secondsUntilEnd = ChronoUnit.SECONDS.between(now, courseEndDate);
-        System.out.println("Seconds until the end of the course: " + secondsUntilEnd);
+package com.bankofmontreal.pricing;
 
-        // Question 5: Take a datetime input and check if it's within the course period
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter date and time in YYYY-MM-DD HH:MM format: ");
-        String inputDateTime = scanner.nextLine();
-        LocalDateTime inputDate = LocalDateTime.parse(inputDateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+import com.bankofmontreal.model.Product;
 
-        LocalDateTime courseStartDate = LocalDateTime.of(2024, 1, 1, 0, 0); // Adjust as needed
-        boolean isWithinCoursePeriod = !inputDate.isBefore(courseStartDate) && !inputDate.isAfter(courseEndDate);
-        System.out.println("Is within course period: " + isWithinCoursePeriod);
+public interface PricingService {
+    double price(Product p);
+}
+
+
+package com.bankofmontreal.pricing;
+
+import com.bankofmontreal.model.Product;
+
+public class FuturePricingService implements PricingService {
+    @Override
+    public double price(Product p) {
+        return 2.0;
+    }
+}
+
+
+package com.bankofmontreal.pricing;
+
+import com.bankofmontreal.model.Product;
+
+public class StockPricingService implements PricingService {
+    @Override
+    public double price(Product p) {
+        return 1.0;
+    }
+}
+
+
+package com.bankofmontreal.pricing;
+
+import com.bankofmontreal.model.Product;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class PricingServiceFactory {
+    private static final Map<String, PricingService> serviceCache = new HashMap<>();
+
+    static {
+        serviceCache.put("Stock", new StockPricingService());
+        serviceCache.put("Future", new FuturePricingService());
+    }
+
+    public static PricingService getInstance(Product product) {
+        return serviceCache.get(product.getProductType());
+    }
+}
+
+
+package com.bankofmontreal.trade;
+
+import com.bankofmontreal.model.Product;
+
+public interface MontrealTradedProducts {
+    void registerNewProduct(Product product) throws ProductAlreadyRegisteredException;
+    void trade(Product product, int quantity);
+    int totalTradeQuantityForDay();
+    double totalValueOfDaysTradedProducts();
+}
+
+
+
+package com.bankofmontreal.trade;
+
+import com.bankofmontreal.model.Product;
+import com.bankofmontreal.pricing.PricingServiceFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class BankOfMontreal implements MontrealTradedProducts {
+    private final Map<String, Integer> productQuantity = new HashMap<>();
+    private final Map<String, Product> registeredProducts = new HashMap<>();
+
+    @Override
+    public void registerNewProduct(Product product) throws ProductAlreadyRegisteredException {
+        if (registeredProducts.containsKey(product.getProductId())) {
+            throw new ProductAlreadyRegisteredException();
+        }
+        registeredProducts.put(product.getProductId(), product);
+    }
+
+    @Override
+    public void trade(Product product, int quantity) {
+        if (!registeredProducts.containsKey(product.getProductId())) {
+            return;
+        }
+        productQuantity.put(product.getProductId(), productQuantity.getOrDefault(product.getProductId(), 0) + quantity);
+    }
+
+    @Override
+    public int totalTradeQuantityForDay() {
+        return productQuantity.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    @Override
+    public double totalValueOfDaysTradedProducts() {
+        return productQuantity.entrySet().stream()
+                .mapToDouble(entry -> PricingServiceFactory.getInstance(registeredProducts.get(entry.getKey()))
+                        .price(registeredProducts.get(entry.getKey())) * entry.getValue())
+                .sum();
+    }
+}
+
+
+package com.bankofmontreal.trade;
+
+public class ProductAlreadyRegisteredException extends Exception {
+}
+
+
+package com.bankofmontreal.runner;
+
+import com.bankofmontreal.model.Future;
+import com.bankofmontreal.model.Product;
+import com.bankofmontreal.model.Stock;
+import com.bankofmontreal.trade.BankOfMontreal;
+import com.bankofmontreal.trade.MontrealTradedProducts;
+import com.bankofmontreal.trade.ProductAlreadyRegisteredException;
+
+public class Runner {
+    public static void main(String[] args) throws ProductAlreadyRegisteredException {
+        Product ibm = new Stock("1", "IBM", "NYSE");
+        Product ms = new Stock("2", "MS", "BATS");
+        Product meta = new Future("3", "NYSE", "META-2050F", 1, 2050);
+
+        MontrealTradedProducts bom = new BankOfMontreal();
+
+        bom.registerNewProduct(ibm);
+        bom.registerNewProduct(ms);
+        bom.registerNewProduct(meta);
+
+        try {
+            bom.registerNewProduct(meta);
+        } catch (ProductAlreadyRegisteredException e) {
+            System.err.println("Product already registered.");
+        }
+
+        bom.trade(ibm, 10);
+        bom.trade(ibm, 20);
+        System.out.println("IBM: " + bom.totalTradeQuantityForDay() + ", " + bom.totalValueOfDaysTradedProducts());
+
+        bom.trade(ms, 30);
+        bom.trade(ms, 40);
+        System.out.println("IBM, MS: " + bom.totalTradeQuantityForDay() + ", " + bom.totalValueOfDaysTradedProducts());
+
+        bom.trade(meta, 50);
+        bom.trade(meta, 60);
+        System.out.println("IBM, MS, META-2050F: " + bom.totalTradeQuantityForDay() + ", " + bom.totalValueOfDaysTradedProducts());
     }
 }
