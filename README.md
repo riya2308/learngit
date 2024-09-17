@@ -1,140 +1,3 @@
-1. Query to return the total number of auctions that have a duration of less than 10 days:
-Original:
-
-sql
-Copy code
-SELECT (enddate - startdate) AS "Days Of Auction" 
-FROM mb_auction 
-WHERE EXTRACT(DAYS FROM (enddate - startdate)) < 10;
-Revised:
-
-sql
-Copy code
-SELECT COUNT(*) AS "Short Duration Auctions" 
-FROM mb_auction 
-WHERE (enddate - startdate) < INTERVAL '10 DAYS';
-2. For all the auctions that are in progress, show the item description, the date that the auction ends, and the reserve price, ordered by reserve price with the highest first:
-Original:
-
-sql
-Copy code
-SELECT mi.description, ma.enddate, ma.reserve 
-FROM mb_auction ma 
-JOIN mb_item mi ON ma.itemid = mi.itemid 
-WHERE ma.status = 'pending' 
-ORDER BY ma.reserve DESC;
-Revised:
-
-sql
-Copy code
-SELECT mi.description, ma.enddate, ma.reserve 
-FROM mb_item mi 
-INNER JOIN mb_auction ma ON ma.itemid = mi.itemid 
-WHERE ma.status = 'pending' 
-ORDER BY ma.reserve DESC NULLS LAST;
-3. Display the names of all users who have bid in auctions they have started:
-Original:
-
-sql
-Copy code
-SELECT mu.name 
-FROM mb_auction ma 
-JOIN mb_user mu ON mu.userid = ma.userid 
-JOIN mb_bid mb ON mb.auctionid = ma.auctionid 
-WHERE mb.bidder = mu.userid;
-Revised:
-
-sql
-Copy code
-SELECT DISTINCT mu.name 
-FROM mb_user mu 
-JOIN mb_auction ma ON ma.userid = mu.userid 
-JOIN mb_bid mb ON mb.auctionid = ma.auctionid 
-WHERE mb.bidder = mu.userid;
-4. Display the names of all users who have auctioned the same item more than once:
-Original:
-
-sql
-Copy code
-SELECT mu.name, mu.userid, ma.itemid, COUNT(ma.itemid) 
-FROM mb_auction ma 
-JOIN mb_user mu ON ma.userid = mu.userid 
-WHERE ma.status = 'reserve_not_met' 
-GROUP BY ma.itemid, mu.userid, mu.name 
-HAVING COUNT(ma.itemid) > 1;
-Revised:
-
-sql
-Copy code
-SELECT mu.name, mu.userid, ma.itemid, COUNT(ma.itemid) AS auction_count 
-FROM mb_auction ma 
-INNER JOIN mb_user mu ON mu.userid = ma.userid 
-WHERE ma.status = 'reserve_not_met' 
-GROUP BY mu.name, mu.userid, ma.itemid 
-HAVING COUNT(ma.itemid) > 1;
-5. Display the auction ID and amount of the winning bid for all 'sold' auctions:
-Original:
-
-sql
-Copy code
-SELECT mb.auctionid, amount 
-FROM mb_bid mb 
-WHERE mb.auctionid IN (
-    SELECT auctionid 
-    FROM mb_auction 
-    WHERE ma.status = 'sold') 
-ORDER BY amount DESC FETCH FIRST 1 ROW ONLY;
-Revised:
-
-sql
-Copy code
-SELECT mb.auctionid, mb.amount 
-FROM mb_bid mb 
-INNER JOIN mb_auction ma ON ma.auctionid = mb.auctionid 
-WHERE ma.status = 'sold' 
-ORDER BY mb.amount DESC LIMIT 1;
-6. List all auctions (pending, sold, or unsold), displaying the end date and the description of the item:
-Original:
-
-sql
-Copy code
-SELECT ma.auctionid, mi.description, COALESCE(mu.name, '-') AS winner_name, 
-    (SELECT amount FROM mb_bid mb WHERE mb.auctionid = ma.auctionid ORDER BY amount DESC FETCH FIRST 1 ROW ONLY) AS winning_amount 
-FROM mb_auction ma 
-LEFT OUTER JOIN mb_user mu ON ma.winner = mu.userid 
-JOIN mb_item mi ON mi.itemid = ma.itemid 
-WHERE ma.winner IS NOT NULL
-UNION 
-SELECT ma.auctionid, mi.description, '---' AS winner_name, 
-    0 AS winning_amount 
-FROM mb_auction ma 
-LEFT OUTER JOIN mb_user mu ON ma.winner = mu.userid 
-JOIN mb_item mi ON mi.itemid = ma.itemid 
-WHERE ma.winner IS NULL;
-Revised:
-
-sql
-Copy code
-SELECT ma.auctionid, mi.description, COALESCE(mu.name, '---') AS winner_name, 
-    (SELECT MAX(amount) FROM mb_bid mb WHERE mb.auctionid = ma.auctionid) AS winning_amount 
-FROM mb_auction ma 
-LEFT JOIN mb_user mu ON mu.userid = ma.winner 
-JOIN mb_item mi ON mi.itemid = ma.itemid 
-WHERE ma.status IN ('pending', 'sold', 'unsold');
-These changes ensure that the structure of the queries is varied while maintaining the original intent.
-
-
-
-
-
-
-
-You said:
-
-REDO
-ChatGPT said:
-ChatGPT
-Based on the task requirements in the screenshot, I'll rewrite and restructure the SQL queries to ensure they meet the specifications without looking copied.
 
 1. A query to return the total number of auctions that have a duration of less than 10 days:
 sql
@@ -200,5 +63,19 @@ These revisions add some distinct structure while ensuring they comply with the 
 
 
 
+SELECT ma.auctionid, 
+       mi.description, 
+       ma.enddate, 
+       CASE 
+           WHEN mu.name IS NULL THEN '==' 
+           ELSE mu.name 
+       END AS winner_name, 
+       MAX(mb.amount) AS winning_amount
+FROM mb_auction ma
+LEFT JOIN mb_bid mb ON mb.auctionid = ma.auctionid
+LEFT JOIN mb_user mu ON mu.userid = ma.winner
+JOIN mb_item mi ON mi.itemid = ma.itemid
+WHERE ma.status IN ('pending', 'sold', 'unsold')
+GROUP BY ma.auctionid, mi.description, ma.enddate, mu.name;
 
 
