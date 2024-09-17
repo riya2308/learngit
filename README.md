@@ -70,12 +70,16 @@ SELECT ma.auctionid,
            WHEN mu.name IS NULL THEN '==' 
            ELSE mu.name 
        END AS winner_name, 
-       MAX(mb.amount) AS winning_amount
+       CASE 
+           WHEN MAX(mb.amount) IS NULL THEN 0 
+           ELSE MAX(mb.amount) 
+       END AS winning_amount
 FROM mb_auction ma
 LEFT JOIN mb_bid mb ON mb.auctionid = ma.auctionid
 LEFT JOIN mb_user mu ON mu.userid = ma.winner
 JOIN mb_item mi ON mi.itemid = ma.itemid
 WHERE ma.status IN ('pending', 'sold', 'unsold')
 GROUP BY ma.auctionid, mi.description, ma.enddate, mu.name;
+
 
 
