@@ -82,4 +82,29 @@ WHERE ma.status IN ('pending', 'sold', 'unsold')
 GROUP BY ma.auctionid, mi.description, ma.enddate, mu.name;
 
 
+WITH WinningBids AS (
+    SELECT mb.auctionid, MAX(mb.amount) AS winning_amount
+    FROM mb_bid mb
+    JOIN mb_auction ma ON mb.auctionid = ma.auctionid
+    WHERE ma.status = 'sold'
+    GROUP BY mb.auctionid
+)
+
+SELECT ma.auctionid, 
+       mi.description, 
+       ma.enddate, 
+       CASE 
+           WHEN mu.name IS NULL THEN '==' 
+           ELSE mu.name 
+       END AS winner_name, 
+       COALESCE(wb.winning_amount, 0) AS winning_amount
+FROM mb_auction ma
+JOIN mb_item mi ON mi.itemid = ma.itemid
+LEFT JOIN mb_user mu ON mu.userid = ma.winner
+LEFT JOIN WinningBids wb ON wb.auctionid = ma.auctionid
+WHERE ma.status IN ('pending', 'sold', 'unsold')
+GROUP BY ma.auctionid, mi.description, ma.enddate, mu.name, wb.winning_amount;
+
+
+
 
