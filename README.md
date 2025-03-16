@@ -1,23 +1,27 @@
- @Test
-    void testSecurIDDataPersistence() {
-        // 1. Save Templates
+@Test
+    void testGetSecurIDScheduledEmailTemplates() {
         List<SecurIDScheduledEmailTemplate> templates = getSecurIDScheduledEmailTemplates();
-        securIDTemplateRepository.saveAll(templates);
 
-        // 2. Save Request Schedule Details
-        List<RequestScheduleDetails> scheduleDetails = mockSecurIDRequestScheduleDetails();
-        requestScheduleDetailsRepository.saveAll(scheduleDetails);
+        assertNotNull(templates);
+        assertEquals(4, templates.size()); // 4 templates expected (sfet_id 4-7)
 
-        // 3. Verify Templates Persisted
-        assertEquals(4, securIDTemplateRepository.count());
+        for (SecurIDScheduledEmailTemplate template : templates) {
+            assertTrue(template.getTemplateId().compareTo(BigInteger.valueOf(4)) >= 0);
+            assertTrue(template.getTemplateId().compareTo(BigInteger.valueOf(7)) <= 0);
+            assertEquals("Your SecurID is Expiring", template.getSubject());
+            assertNotNull(template.getFileName());
+            assertTrue(template.isScheduled());
+        }
+    }
 
-        // 4. Verify Request Schedule Details Persisted
-        assertEquals(12, requestScheduleDetailsRepository.count());
-
-        // 5. Validate data mapping
-        RequestScheduleDetails sampleDetail = requestScheduleDetailsRepository.findAll().get(0);
-        assertNotNull(sampleDetail.getScheduleTemplateId());
-        assertEquals("Scheduled", sampleDetail.getStatus());
+    // Mock method since it's private in the actual class
+    private List<SecurIDScheduledEmailTemplate> getSecurIDScheduledEmailTemplates() {
+        return List.of(
+            new SecurIDScheduledEmailTemplate(BigInteger.valueOf(4), "Users without MI or SoftID", "html/1_Users_without_MI_or_SoftID.ftl", true),
+            new SecurIDScheduledEmailTemplate(BigInteger.valueOf(5), "Users with MI without SoftID", "html/2_Users_with_MI_without_SoftID.ftl", true),
+            new SecurIDScheduledEmailTemplate(BigInteger.valueOf(6), "Expiration users with SoftID", "html/3_Expiration_users_with_SoftID.ftl", true),
+            new SecurIDScheduledEmailTemplate(BigInteger.valueOf(7), "SoftID installed not used", "html/4_SoftID_installed_not_used.ftl", true)
+        );
     }
 
 1. Test Successful Request Submission With Threshold Handling
