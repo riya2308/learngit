@@ -1,15 +1,24 @@
-private SecurIDScheduledEmailTemplate getSecurIDScheduledEmailTemplate() {
-    SecurIDScheduledEmailTemplate securIDTemplate = new SecurIDScheduledEmailTemplate();
+ @Test
+    void testSecurIDDataPersistence() {
+        // 1. Save Templates
+        List<SecurIDScheduledEmailTemplate> templates = getSecurIDScheduledEmailTemplates();
+        securIDTemplateRepository.saveAll(templates);
 
-    securIDTemplate.setTemplateId(BigInteger.ONE);
-    securIDTemplate.setTemplateName("securIDTemplate");
-    securIDTemplate.setThresholdDays(BigInteger.TWO);
-    securIDTemplate.setNotificationTime("09:00");
-    securIDTemplate.setCreatedBy("system");
-    securIDTemplate.setCreatedAt(new Date());
+        // 2. Save Request Schedule Details
+        List<RequestScheduleDetails> scheduleDetails = mockSecurIDRequestScheduleDetails();
+        requestScheduleDetailsRepository.saveAll(scheduleDetails);
 
-    return securIDTemplate;
-}
+        // 3. Verify Templates Persisted
+        assertEquals(4, securIDTemplateRepository.count());
+
+        // 4. Verify Request Schedule Details Persisted
+        assertEquals(12, requestScheduleDetailsRepository.count());
+
+        // 5. Validate data mapping
+        RequestScheduleDetails sampleDetail = requestScheduleDetailsRepository.findAll().get(0);
+        assertNotNull(sampleDetail.getScheduleTemplateId());
+        assertEquals("Scheduled", sampleDetail.getStatus());
+    }
 
 1. Test Successful Request Submission With Threshold Handling
 java
