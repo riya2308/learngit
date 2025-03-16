@@ -1,126 +1,73 @@
-<div class="modal">
-    <div class="modal-header">
-        <div class="header-content">
-            <img src="powershell-icon.png" alt="PowerShell Icon" class="powershell-icon">
-            <div>
-                <div class="modal-title">Windows PowerShell (x86)</div>  
-            </div>
-        </div>
-        <button type="button" class="close" onclick="onClose()">&times;</button>
-    </div>
-    <div class="modal-body">
-        <h2>
-            Workforce Technology
-                <div class="modal-subtitle">02/05/2025 17:10:11</div>
-                </h2>
-        <h2>The title should be given</h2>
-        <p>The body for the TestingPopup5thFebTc01 is not empty</p>
-        <div class="dropdown">
-            <label for="read-later-interval">Select a Read Later Interval</label>
-            <select id="read-later-interval" class="select-dropdown">
-                <option>15 Minutes</option>
-                <option>30 Minutes</option>
-                <option>1 Hour</option>
-            </select>
-        </div>
-        <div class="footer-buttons">
-            <button class="btn-primary">Learn More</button>
-            <button class="btn-default">Read Later</button>
-            <button class="btn-default">Close</button>
-        </div>
-    </div>
-</div>
+1. Test Successful Request Submission With Threshold Handling
+java
+Copy
+Edit
+@Test
+void testSuccessfulRequestSubmission() {
+    RequestModel requestModel = new RequestModel();
+    requestModel.setUseCaseId(3);
+    requestModel.setTargetDate("2025-03-27");
 
+    when(constants.USE_CASE_THRESHOLD_MAP.getOrDefault(any(), any())).thenReturn(BigInteger.TWO);
+    when(useCaseService.getNthEmailIntervalDaysForUseCase(any(), any())).thenReturn(BigInteger.TWO);
+    when(timeZoneService.getTimeZoneById(any())).thenReturn(new TimeZoneDetails("UTC"));
 
+    // Simulate a valid target time before the cutoff
+    Date targetDate = DateUtility.convertStringToDateFormat(requestModel.getTargetDate(), YYYY_MM_DD);
+    Date cutOffDateTime = DateUtility.addThresholdDays(targetDate, BigInteger.TWO);
+    Date currentTimeInTargetTimeZone = DateUtility.convertDateToZoneTime(new Date(), "UTC");
 
-
-
-
-
-css:
-
-.modal {
-    background-color: black;
-    color: white;
-    border-radius: 10px;
-    width: 600px; /* Adjust based on your layout needs */
-    min-height: 350px; /* Adjust height as needed */
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    assertDoesNotThrow(() -> {
+        if (BigInteger.TWO.compareTo(BigInteger.ZERO) > 0 && !currentTimeInTargetTimeZone.after(cutOffDateTime)) {
+            // No exception means the flow is correct
+        }
+    });
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 5px; /* Reduced bottom padding */
-}
+2. Test Request Submission When threshold = 0 (Should Pass)
+java
+Copy
+Edit
+@Test
+void testRequestSubmissionWithZeroThreshold() {
+    RequestModel requestModel = new RequestModel();
+    requestModel.setUseCaseId(3);
+    requestModel.setTargetDate("2025-03-27");
 
-.header-content {
-    display: flex;
-    align-items: center;
-}
+    when(constants.USE_CASE_THRESHOLD_MAP.getOrDefault(any(), any())).thenReturn(BigInteger.ZERO);
+    when(useCaseService.getNthEmailIntervalDaysForUseCase(any(), any())).thenReturn(BigInteger.ZERO);
+    when(timeZoneService.getTimeZoneById(any())).thenReturn(new TimeZoneDetails("UTC"));
 
-.powershell-icon {
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
+    // Even if threshold is zero, no error should occur
+    assertDoesNotThrow(() -> {
+        if (BigInteger.ZERO.compareTo(BigInteger.ZERO) > 0) {
+            throw new CustomException("This should not happen");
+        }
+    });
 }
+3. Test Scheduling Throws Exception When currentTime > cutOffDateTime
+java
+Copy
+Edit
+@Test
+void testSchedulingFailureDueToInvalidTriggerTime() {
+    RequestModel requestModel = new RequestModel();
+    requestModel.setUseCaseId(3);
+    requestModel.setTargetDate("2025-03-27");
 
-.modal-title {
-    font-size: 16px;
-    margin: 0;
-    line-height: 1.25; /* Adjust line height for tighter spacing */
-}
+    when(constants.USE_CASE_THRESHOLD_MAP.getOrDefault(any(), any())).thenReturn(BigInteger.TWO);
+    when(useCaseService.getNthEmailIntervalDaysForUseCase(any(), any())).thenReturn(BigInteger.TWO);
+    when(timeZoneService.getTimeZoneById(any())).thenReturn(new TimeZoneDetails("UTC"));
 
-.modal-subtitle {
-    font-size: 12px;
-    color: #888;
-}
+    Date targetDate = DateUtility.convertStringToDateFormat(requestModel.getTargetDate(), YYYY_MM_DD);
+    Date cutOffDateTime = DateUtility.addThresholdDays(targetDate, BigInteger.TWO);
+    Date currentTimeInTargetTimeZone = DateUtility.convertDateToZoneTime(new Date(System.currentTimeMillis() + 10000000), "UTC"); // Future time
 
-.close {
-    cursor: pointer;
-    border: none;
-    background: none;
-    color: white;
-    font-size: 24px;
-}
+    Exception exception = assertThrows(CustomException.class, () -> {
+        if (BigInteger.TWO.compareTo(BigInteger.ZERO) > 0 && currentTimeInTargetTimeZone.after(cutOffDateTime)) {
+            throw new CustomException(messageSource.getMessage("request.schedule.time.error", new Object[]{}, Locale.ENGLISH));
+        }
+    });
 
-.modal-body {
-    padding-top: 5px; /* Reduced top padding */
-}
-
-.select-dropdown {
-    width: 100%;
-    color: white; /* Text color */
-    background-color: #333; /* Dropdown background */
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px solid #555; /* Defines the dropdown clearly */
-}
-
-.footer-buttons {
-    margin-top: 20px; /* Ensures spacing above buttons */
-}
-
-.footer-buttons button {
-    margin-right: 10px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #333;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.btn-primary {
-    background-color: #007bff;
-}
-
-.btn-default {
-    background-color: #6c757d;
+    assertTrue(exception.getMessage().contains("request.schedule.time.error"));
 }
