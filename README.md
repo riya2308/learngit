@@ -1,3 +1,16 @@
+private SecurIDScheduledEmailTemplate getSecurIDScheduledEmailTemplate() {
+    SecurIDScheduledEmailTemplate securIDTemplate = new SecurIDScheduledEmailTemplate();
+
+    securIDTemplate.setTemplateId(BigInteger.ONE);
+    securIDTemplate.setTemplateName("securIDTemplate");
+    securIDTemplate.setThresholdDays(BigInteger.TWO);
+    securIDTemplate.setNotificationTime("09:00");
+    securIDTemplate.setCreatedBy("system");
+    securIDTemplate.setCreatedAt(new Date());
+
+    return securIDTemplate;
+}
+
 1. Test Successful Request Submission With Threshold Handling
 java
 Copy
